@@ -1,1 +1,3 @@
-# S8_NoSQL
+# NoSQL
+
+## Repo for the NoSQL course at ESILV
