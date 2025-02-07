@@ -1,15 +1,19 @@
 import json
 import csv
 import os
+import pandas as pd
+import uuid
 
 def main():
     # Input NDJSON file and output CSV file
     # By default, set to the dataBatch for testing purposes, can be changed to your actual (or full) dataset !
-    input_file = '../../Database/dataBatch.ndjson'
-    output_file = '../../Database/dataBatch.csv'
+    input_file = '../../Bigdata/InspectionsRestaurant.json'
+    output_file = '../../Bigdata/InspectionsRestaurant.csv'
+    output_folder = '../../Bigdata/'
 
     # Turn the NDJSON file to a JSON file. (This step is needed if the input is an NDJSON file)
-    converted_file = ndjson_to_json(input_file)
+    #converted_file = ndjson_to_json(input_file)
+    converted_file = input_file
 
     # Open the JSON file and the CSV file
     with open(converted_file, 'r') as json_file, open(output_file, 'w', newline='', encoding='utf-8') as csv_file:
@@ -48,6 +52,30 @@ def main():
 
     print(f"Conversion complete! CSV file saved as '{output_file}'.")
 
+
+    # Load CSV file
+    df = pd.read_csv(output_file)
+
+    # Define column subsets
+    inspections_columns = ["idRestaurant", "inspectionDate", "violationCode", "violationDescription", "criticalFlag", "score", "grade"]
+    restaurant_columns = ["idRestaurant", "name", "borough", "buildingnum", "street", "zipcode", "phone", "cuisineType"]
+
+    # Extract tables
+    inspections = df[inspections_columns].copy()
+    restaurants = df[restaurant_columns].copy()
+
+    # Generate UUIDs for each inspection row
+    inspections["idInspection"] = [uuid.uuid4() for _ in range(len(inspections))]
+
+    # Save to new CSV files
+    inspections.to_csv(f"{output_folder}inspections.csv", index=False)
+    restaurants.to_csv(f"{output_folder}restaurants.csv", index=False)
+
+    inspections_restaurants_columns = ['idRestaurant', 'name', 'borough', 'inspectionDate', 'grade']
+    inspections_restaurants = df[inspections_restaurants_columns]
+    inspections_restaurants.to_csv(f"{output_folder}inspections_restaurants.csv", index=False)
+
+    print("Files saved.")
 
 def ndjson_to_json(ndjson_file):
 
